@@ -41,17 +41,27 @@ namespace TwitterApi.Controllers
             //}
 
             //tweet lookup
-            var data = await poster.LookupTweet("xxxxxxxxxxxxxxxxxxx");
+            //var data = await poster.LookupTweet("xxxxxxxxxxxxxxxxxxx");
 
             //like tweet
-            LikeTweetModel model = new LikeTweetModel
-            {
-                Tweet_Id = "xxxxxxxxxxxxxxxxxxx"
-            };
-            var liketweet = await poster.LikeTweet(model);
+            //LikeTweetModel model = new LikeTweetModel
+            //{
+            //    Tweet_Id = "xxxxxxxxxxxxxxxxxxx"
+            //};
+            //var liketweet = await poster.LikeTweet(model);
 
             //unlike tweet
-            var unliketweet = await poster.UnlikeTweet("xxxxxxxxxxxxxxxxxxx");
+            //var unliketweet = await poster.UnlikeTweet("xxxxxxxxxxxxxxxxxxx");
+
+            //follow user
+            FollowUserModel model = new FollowUserModel
+            {
+                Target_User_Id = "target_user_id"
+            };
+            var followuser = await poster.FollowUser(model);
+
+            //unfollow user
+            var unfollowuser = await poster.UnfollowUser("target_user_id");
             return View();
         }
 
@@ -135,6 +145,31 @@ namespace TwitterApi.Controllers
                 }
             );
         }
+        
+        public Task<ITwitterResult> FollowUser(FollowUserModel followUser)
+        {
+            return this.client.Execute.AdvanceRequestAsync(
+                (ITwitterRequest request) =>
+                {
+                    var jsonBody = this.client.Json.Serialize(followUser);
+                    var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+                    request.Query.Url = "https://api.twitter.com/2/users/:id/following".Replace(":id", "user_numeric_id");
+                    request.Query.HttpMethod = Tweetinvi.Models.HttpMethod.POST;
+                    request.Query.HttpContent = content;
+                }
+            );
+        }
+        
+        public Task<ITwitterResult> UnfollowUser(string target_user_id)
+        {
+            return this.client.Execute.AdvanceRequestAsync(
+                (ITwitterRequest request) =>
+                {
+                    request.Query.Url = "https://api.twitter.com/2/users/:id/following/:target_user_id".Replace(":id", "user_numeric_id").Replace(":target_user_id", target_user_id);
+                    request.Query.HttpMethod = Tweetinvi.Models.HttpMethod.DELETE;
+                }
+            );
+        }
     }
 
     public class TweetPostModel
@@ -147,5 +182,11 @@ namespace TwitterApi.Controllers
     {
         [JsonProperty("tweet_id")]
         public string Tweet_Id { get; set; } = string.Empty;
+    }
+    
+    public class FollowUserModel
+    {
+        [JsonProperty("target_user_id")]
+        public string Target_User_Id { get; set; } = string.Empty;
     }
 }
