@@ -23,19 +23,35 @@ namespace TwitterApi.Controllers
         public async Task<IActionResult> Index()
         {
             var poster = new ManageTweetPosts(_twitterClient);
+            //create tweet
             //ITwitterResult result = await poster.PostTweet(
             //    new TweetPostModel
             //    {
             //        Text = "Hey, this is my new post from api request"
             //    }
             //);
-            ITwitterResult result = await poster.DeleteTweet("1750112290836488268");
-            if (result.Response.IsSuccessStatusCode == false)
+
+            //delete tweet
+            //ITwitterResult result = await poster.DeleteTweet("xxxxxxxxxxxxxxx");
+            //if (result.Response.IsSuccessStatusCode == false)
+            //{
+            //    throw new Exception(
+            //        "Error when posting tweet: " + Environment.NewLine + result.Content
+            //    );
+            //}
+
+            //tweet lookup
+            var data = await poster.LookupTweet("xxxxxxxxxxxxxxxxxxx");
+
+            //like tweet
+            LikeTweetModel model = new LikeTweetModel
             {
-                throw new Exception(
-                    "Error when posting tweet: " + Environment.NewLine + result.Content
-                );
-            }
+                Tweet_Id = "xxxxxxxxxxxxxxxxxxx"
+            };
+            var liketweet = await poster.LikeTweet(model);
+
+            //unlike tweet
+            var unliketweet = await poster.UnlikeTweet("xxxxxxxxxxxxxxxxxxx");
             return View();
         }
 
@@ -83,11 +99,53 @@ namespace TwitterApi.Controllers
                 }
             );
         }
+        
+        public Task<ITwitterResult> LookupTweet(string id)
+        {
+            return this.client.Execute.AdvanceRequestAsync(
+                (ITwitterRequest request) =>
+                {
+                    request.Query.Url = "https://api.twitter.com/2/tweets/:id".Replace(":id", id);
+                    request.Query.HttpMethod = Tweetinvi.Models.HttpMethod.GET;
+                }
+            );
+        }
+        
+        public Task<ITwitterResult> LikeTweet(LikeTweetModel likeTweet)
+        {
+            return this.client.Execute.AdvanceRequestAsync(
+                (ITwitterRequest request) =>
+                {
+                    var jsonBody = this.client.Json.Serialize(likeTweet);
+                    var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+                    request.Query.Url = "https://api.twitter.com/2/users/:id/likes".Replace(":id", "user_numeric_id");
+                    request.Query.HttpMethod = Tweetinvi.Models.HttpMethod.POST;
+                    request.Query.HttpContent = content;
+                }
+            );
+        }
+
+        public Task<ITwitterResult> UnlikeTweet(string id)
+        {
+            return this.client.Execute.AdvanceRequestAsync(
+                (ITwitterRequest request) =>
+                {
+                    request.Query.Url = "https://api.twitter.com/2/users/:id/likes/:tweet_id".Replace(":id", "user_numeric_id").Replace(":tweet_id", "xxxxxxxxxxxxxxxxxxx");
+                    request.Query.HttpMethod = Tweetinvi.Models.HttpMethod.DELETE;
+                }
+            );
+        }
     }
 
     public class TweetPostModel
     {
         [JsonProperty("text")]
         public string Text { get; set; } = string.Empty;
+    }
+    
+    public class LikeTweetModel
+    {
+        [JsonProperty("tweet_id")]
+        public string Tweet_Id { get; set; } = string.Empty;
     }
 }
