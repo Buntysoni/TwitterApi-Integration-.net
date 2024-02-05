@@ -65,9 +65,19 @@ namespace TwitterApi.Controllers
 
             //blocked users list
             //var blockuseelist = await poster.GetBlockedUsersList();
-            
+
             //muted users list
             //var muteuseelist = await poster.GetMutedUsersList();
+
+            //retweet tweet
+            LikeTweetModel model = new LikeTweetModel
+            {
+                Tweet_Id = "1373888327535919110"
+            };
+            var retweet = await poster.Retweet(model);
+
+            //undo retweet
+            var undoretweet = await poster.UndoRetweet("1373888327535919110");
             return View();
         }
 
@@ -195,6 +205,31 @@ namespace TwitterApi.Controllers
                 {
                     request.Query.Url = "https://api.twitter.com/2/users/:id/muting".Replace(":id", "user_numeric_id");
                     request.Query.HttpMethod = Tweetinvi.Models.HttpMethod.GET;
+                }
+            );
+        }
+
+        public Task<ITwitterResult> Retweet(LikeTweetModel likeTweet)
+        {
+            return this.client.Execute.AdvanceRequestAsync(
+                (ITwitterRequest request) =>
+                {
+                    var jsonBody = this.client.Json.Serialize(likeTweet);
+                    var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+                    request.Query.Url = "https://api.twitter.com/2/users/:id/retweets".Replace(":id", "xxxxxxxxxxxxxxxxxx");
+                    request.Query.HttpMethod = Tweetinvi.Models.HttpMethod.POST;
+                    request.Query.HttpContent = content;
+                }
+            );
+        }
+
+        public Task<ITwitterResult> UndoRetweet(string source_tweet_id)
+        {
+            return this.client.Execute.AdvanceRequestAsync(
+                (ITwitterRequest request) =>
+                {
+                    request.Query.Url = "https://api.twitter.com/2/users/:id/retweets/:source_tweet_id".Replace(":id", "xxxxxxxxxxxxxxxxxx").Replace(":source_tweet_id", source_tweet_id);
+                    request.Query.HttpMethod = Tweetinvi.Models.HttpMethod.DELETE;
                 }
             );
         }
