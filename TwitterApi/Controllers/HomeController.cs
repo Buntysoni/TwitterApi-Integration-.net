@@ -54,14 +54,20 @@ namespace TwitterApi.Controllers
             //var unliketweet = await poster.UnlikeTweet("xxxxxxxxxxxxxxxxxxx");
 
             //follow user
-            FollowUserModel model = new FollowUserModel
-            {
-                Target_User_Id = "target_user_id"
-            };
-            var followuser = await poster.FollowUser(model);
+            //FollowUserModel model = new FollowUserModel
+            //{
+            //    Target_User_Id = "target_user_id"
+            //};
+            //var followuser = await poster.FollowUser(model);
 
             //unfollow user
-            var unfollowuser = await poster.UnfollowUser("target_user_id");
+            //var unfollowuser = await poster.UnfollowUser("target_user_id");
+
+            //blocked users list
+            //var blockuseelist = await poster.GetBlockedUsersList();
+            
+            //muted users list
+            //var muteuseelist = await poster.GetMutedUsersList();
             return View();
         }
 
@@ -167,6 +173,28 @@ namespace TwitterApi.Controllers
                 {
                     request.Query.Url = "https://api.twitter.com/2/users/:id/following/:target_user_id".Replace(":id", "user_numeric_id").Replace(":target_user_id", target_user_id);
                     request.Query.HttpMethod = Tweetinvi.Models.HttpMethod.DELETE;
+                }
+            );
+        }
+
+        public Task<ITwitterResult> GetBlockedUsersList()
+        {
+            return this.client.Execute.AdvanceRequestAsync(
+                (ITwitterRequest request) =>
+                {
+                    request.Query.Url = "https://api.twitter.com/2/users/:id/blocking".Replace(":id", "user_numeric_id");
+                    request.Query.HttpMethod = Tweetinvi.Models.HttpMethod.GET;
+                }
+            );
+        }
+        
+        public Task<ITwitterResult> GetMutedUsersList()
+        {
+            return this.client.Execute.AdvanceRequestAsync(
+                (ITwitterRequest request) =>
+                {
+                    request.Query.Url = "https://api.twitter.com/2/users/:id/muting".Replace(":id", "user_numeric_id");
+                    request.Query.HttpMethod = Tweetinvi.Models.HttpMethod.GET;
                 }
             );
         }
